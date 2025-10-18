@@ -1,0 +1,48 @@
+[package]
+name = "attestation-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+# Canonical CBOR serialization
+ciborium = { workspace = true }
+serde = { workspace = true }
+
+# Cryptography
+sha2 = { workspace = true }
+blake3 = { workspace = true }
+ed25519-dalek = { workspace = true }
+rand = { workspace = true }
+
+# Time
+chrono = { workspace = true }
+
+# Error handling
+thiserror = { workspace = true }
+
+# Async
+async-trait = "0.1"
+tokio = { workspace = true, optional = true }
+
+# Merkle tree
+rs_merkle = "1.4"
+
+[dev-dependencies]
+proptest = { workspace = true }
+hex = "0.4"
+tokio = { workspace = true, features = ["test-util"] }
+
+[features]
+default = []
+async = ["tokio"]
+
+# TODO: Implement benchmarks
+# [[bench]]
+# name = "checkpoint_signing"
+# harness = false
+
+[[example]]
+name = "create_checkpoint"
+path = "../examples/create_checkpoint.rs"

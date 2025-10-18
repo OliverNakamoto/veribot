@@ -1,0 +1,72 @@
+[workspace]
+members = [
+    "attestation-core",
+    # "attestation-sgx",  # TODO: Fix compilation errors
+    # TODO: Implement these crates
+    # "attestation-nitro",
+    # "attestation-trustzone",
+    # "gateway/api",
+    # "gateway/eigencompute",
+    # "gateway/storage",
+    # "verifier/cli",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Humanoid Labs <hello@humanoidlabs.xyz>"]
+license = "Apache-2.0"
+repository = "https://github.com/humanoidlabs/robot-attestation"
+
+[workspace.dependencies]
+# Serialization (canonical CBOR)
+ciborium = "0.2"
+serde = { version = "1.0", features = ["derive"] }
+
+# Cryptography
+sha2 = "0.10"
+blake3 = "1.5"
+ed25519-dalek = { version = "2.1", features = ["rand_core"] }
+rand = "0.8"
+
+# Time handling
+chrono = { version = "0.4", features = ["serde"] }
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Async runtime
+tokio = { version = "1.35", features = ["full"] }
+tokio-util = "0.7"
+
+# Web framework (gateway)
+axum = "0.7"
+tower = "0.4"
+tower-http = { version = "0.5", features = ["trace", "cors"] }
+
+# Database
+sqlx = { version = "0.7", features = ["runtime-tokio", "postgres", "macros", "chrono", "uuid"] }
+redis = { version = "0.24", features = ["tokio-comp", "connection-manager"] }
+
+# Kafka
+rdkafka = { version = "0.36", features = ["tokio"] }
+
+# Tracing & monitoring
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+prometheus = "0.13"
+
+# Testing
+proptest = "1.4"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+
+[profile.dev]
+opt-level = 0
+debug = true

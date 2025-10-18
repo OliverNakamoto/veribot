@@ -1,0 +1,53 @@
+# Rust
+/target/
+**/target/
+Cargo.lock
+**/*.rs.bk
+*.pdb
+
+# ROS
+/ros_package/build/
+/ros_package/install/
+/ros_package/log/
+*.pyc
+__pycache__/
+
+# Node.js
+node_modules/
+dist/
+.env
+.env.local
+
+# Smart contracts
+smart-contracts/out/
+smart-contracts/cache/
+smart-contracts/broadcast/
+smart-contracts/lib/
+
+# Enclave artifacts
+enclave/optee/ta/*.ta
+enclave/sgx/*.signed.so
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Keys & secrets
+*.pem
+*.key
+*.secret
+.secrets/
+
+# Logs
+*.log
+
+# Test artifacts
+coverage/
+*.profdata

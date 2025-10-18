@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot Attestation Audit Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.5em;
+        }
+
+        .mission-info {
+            display: grid;
+            gap: 15px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .info-value {
+            color: #333;
+            font-family: 'Courier New', monospace;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .status-verified {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-trusted {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .timeline {
+            position: relative;
+            min-height: 600px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .timeline::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .timeline::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .timeline::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+
+        .timeline::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-left: 3px solid #667eea;
+        }
+
+        .timeline-item:last-child {
+            border-left: 3px solid transparent;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: -8px;
+            top: 0;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #667eea;
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px #667eea;
+        }
+
+        .timeline-content {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .timeline-content:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .timeline-time {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .timeline-event {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .timeline-hash {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            color: #666;
+            word-break: break-all;
+        }
+
+        .verification-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .verification-checks {
+            display: grid;
+            gap: 15px;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .check-item.pass {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+
+        .check-item.fail {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+
+        .check-icon {
+            font-size: 1.5em;
+            margin-right: 15px;
+        }
+
+        .check-text {
+            flex: 1;
+        }
+
+        .check-label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .check-detail {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 3px;
+        }
+
+        .merkle-proof {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px dashed #667eea;
+        }
+
+        .merkle-proof h3 {
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .merkle-tree {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            line-height: 1.8;
+        }
+
+        .merkle-node {
+            padding: 5px 10px;
+            margin: 3px 0;
+            background: white;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .merkle-leaf {
+            background: #cce5ff;
+        }
+
+        .merkle-root {
+            background: #d4edda;
+            font-weight: 600;
+        }
+
+        .replay-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .replay-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .reset-button {
+            width: 100%;
+            padding: 12px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .reset-button:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .live-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #28a745;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Robot Attestation Audit Viewer</h1>
+            <p>Cryptographically Verifiable Mission Replay</p>
+        </div>
+
+        <div class="dashboard">
+            <!-- Mission Info Panel -->
+            <div class="card">
+                <h2>Mission Details</h2>
+                <div class="mission-info">
+                    <div class="info-row">
+                        <span class="info-label">Robot ID</span>
+                        <span class="info-value">ROBOT-001</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Mission ID</span>
+                        <span class="info-value">MISSION-2025-10-11-001</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Model Hash</span>
+                        <span class="info-value">sha256:3f4a2b...</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Status</span>
+                        <span class="status-badge status-verified">✓ Verified</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Trust Mode</span>
+                        <span class="status-badge status-trusted">Trusted TEE</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Sequence</span>
+                        <span class="info-value">42</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Monotonic Counter</span>
+                        <span class="info-value">1337</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Checkpoints</span>
+                        <span class="info-value">5 anchored</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <button class="replay-button" onclick="replayMission()">
+                        ▶ Replay Mission
+                    </button>
+                    <button class="reset-button" onclick="resetTimeline()">
+                        ↻ Reset Timeline
+                    </button>
+                </div>
+            </div>
+
+            <!-- Timeline Panel -->
+            <div class="card">
+                <h2><span class="live-indicator"></span>Mission Timeline</h2>
+                <div class="timeline" id="timeline">
+                    <!-- Timeline items will be added here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Verification Panel -->
+        <div class="verification-panel">
+            <h2>Cryptographic Verification</h2>
+            <div class="verification-checks">
+                <div class="check-item pass">
+                    <span class="check-icon">✓</span>
+                    <div class="check-text">
+                        <div class="check-label">Signature Valid</div>
+                        <div class="check-detail">Ed25519 signature verified against enclave public key</div>
+                    </div>
+                </div>
+
+                <div class="check-item pass">
+                    <span class="check-icon">✓</span>
+                    <div class="check-text">
+                        <div class="check-label">Anti-Rollback Protection</div>
+                        <div class="check-detail">Sequence 42 > previous (41), monotonic counter valid</div>
+                    </div>
+                </div>
+
+                <div class="check-item pass">
+                    <span class="check-icon">✓</span>
+                    <div class="check-text">
+                        <div class="check-label">Enclave Attestation</div>
+                        <div class="check-detail">Intel SGX quote verified, measurement not revoked</div>
+                    </div>
+                </div>
+
+                <div class="check-item pass">
+                    <span class="check-icon">✓</span>
+                    <div class="check-text">
+                        <div class="check-label">Merkle Root Anchored</div>
+                        <div class="check-detail">On-chain commitment found at block 12,345,678</div>
+                    </div>
+                </div>
+
+                <div class="check-item pass">
+                    <span class="check-icon">✓</span>
+                    <div class="check-text">
+                        <div class="check-label">Model Provenance</div>
+                        <div class="check-detail">Model registered with Sigstore signature</div>
+                    </div>
+                </div>
+
+                <div class="check-item pass">
+                    <span class="check-icon">✓</span>
+                    <div class="check-text">
+                        <div class="check-label">Chain Integrity</div>
+                        <div class="check-detail">prev_root links valid across all checkpoints</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Merkle Proof Visualization -->
+            <div class="merkle-proof">
+                <h3>Merkle Proof for Entry #3</h3>
+                <div class="merkle-tree">
+                    <div><span class="merkle-root merkle-node">Root: f7a3e2c1...</span></div>
+                    <div style="margin-left: 20px;">├─ <span class="merkle-node">b4d5a9...</span></div>
+                    <div style="margin-left: 40px;">│  ├─ <span class="merkle-node">Entry #1: Robot started</span></div>
+                    <div style="margin-left: 40px;">│  └─ <span class="merkle-node">Entry #2: Moved to waypoint A</span></div>
+                    <div style="margin-left: 20px;">└─ <span class="merkle-node">c8e1f3...</span></div>
+                    <div style="margin-left: 40px;">   ├─ <span class="merkle-leaf merkle-node">Entry #3: Obstacle detected ✓</span></div>
+                    <div style="margin-left: 40px;">   └─ <span class="merkle-node">Entry #4: Rerouted</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const timelineData = [
+            { time: '10:00:00', event: 'Mission Started', hash: 'sha256:a1b2c3d4...', checkpoint: 1 },
+            { time: '10:00:15', event: 'Model Loaded: autonomous-nav-v1.0.0', hash: 'sha256:3f4a2b1c...', checkpoint: 1 },
+            { time: '10:00:30', event: 'Moved to waypoint A (x:10, y:20)', hash: 'sha256:e5f6a7b8...', checkpoint: 1 },
+            { time: '10:01:00', event: 'Obstacle detected at (x:15, y:25)', hash: 'sha256:c9d0e1f2...', checkpoint: 2 },
+            { time: '10:01:15', event: 'Rerouting calculated', hash: 'sha256:a3b4c5d6...', checkpoint: 2 },
+            { time: '10:01:45', event: 'Moved to waypoint B (x:30, y:40)', hash: 'sha256:e7f8a9b0...', checkpoint: 3 },
+            { time: '10:02:00', event: 'Arrived at destination', hash: 'sha256:c1d2e3f4...', checkpoint: 4 },
+            { time: '10:02:15', event: 'Mission Completed', hash: 'sha256:a5b6c7d8...', checkpoint: 5 }
+        ];
+
+        function renderTimeline() {
+            const timeline = document.getElementById('timeline');
+            timeline.innerHTML = '';
+
+            timelineData.forEach((item, index) => {
+                setTimeout(() => {
+                    const div = document.createElement('div');
+                    div.className = 'timeline-item';
+                    div.innerHTML = `
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-time">${item.time} • Checkpoint #${item.checkpoint}</div>
+                            <div class="timeline-event">${item.event}</div>
+                            <div class="timeline-hash">Entry Hash: ${item.hash}</div>
+                        </div>
+                    `;
+                    div.style.opacity = '0';
+                    div.style.transform = 'translateX(-20px)';
+                    timeline.appendChild(div);
+
+                    // Animate entrance
+                    setTimeout(() => {
+                        div.style.transition = 'all 0.8s';
+                        div.style.opacity = '1';
+                        div.style.transform = 'translateX(0)';
+
+                        // Auto-scroll to show new item
+                        div.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    }, 50);
+                }, index * 1500);  // 1.5 seconds between items
+            });
+        }
+
+        function replayMission() {
+            const timeline = document.getElementById('timeline');
+            timeline.innerHTML = '';
+            timeline.scrollTop = 0;
+
+            timelineData.forEach((item, index) => {
+                setTimeout(() => {
+                    const div = document.createElement('div');
+                    div.className = 'timeline-item';
+                    div.innerHTML = `
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-time">${item.time} • Checkpoint #${item.checkpoint}</div>
+                            <div class="timeline-event">${item.event}</div>
+                            <div class="timeline-hash">Entry Hash: ${item.hash}</div>
+                        </div>
+                    `;
+                    div.style.opacity = '0';
+                    div.style.transform = 'translateX(-20px)';
+                    timeline.appendChild(div);
+
+                    setTimeout(() => {
+                        div.style.transition = 'all 0.5s';
+                        div.style.opacity = '1';
+                        div.style.transform = 'translateX(0)';
+
+                        // Auto-scroll to show new item
+                        div.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    }, 10);
+                }, index * 1500);  // 1.5 seconds between items
+            });
+        }
+
+        function resetTimeline() {
+            const timeline = document.getElementById('timeline');
+
+            // Fade out all items
+            const items = timeline.querySelectorAll('.timeline-item');
+            items.forEach((item, index) => {
+                setTimeout(() => {
+                    item.style.transition = 'all 0.3s';
+                    item.style.opacity = '0';
+                    item.style.transform = 'translateX(-30px)';
+                }, index * 50);
+            });
+
+            // Clear after animation
+            setTimeout(() => {
+                timeline.innerHTML = '';
+                timeline.scrollTop = 0;
+            }, items.length * 50 + 300);
+        }
+
+        // Initial render
+        renderTimeline();
+    </script>
+</body>
+</html>
