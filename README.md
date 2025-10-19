@@ -4,6 +4,8 @@
 
 VeriBot creates tamper-evident audit trails that prove which AI model executed during each robot mission. Using Trusted Execution Environments (TEEs), Merkle trees, and blockchain anchoring, it provides cryptographic proof of robot actions for safety, compliance, and liability.
 
+![VeriBot Demo](public/photo.png)
+
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
 ![Build](https://img.shields.io/badge/build-passing-brightgreen.svg)
 ![Tests](https://img.shields.io/badge/tests-21%20passing-brightgreen.svg)
