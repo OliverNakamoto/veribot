@@ -253,7 +253,7 @@ Contributions welcome! Please:
 
 ## 👥 Team
 
-Built by [Humanoid Labs](https://github.com/OliverNakamoto)
+Built by [Humanoid Labs](https://humanoidlabs.no)
 
 **Contact:**
 - GitHub: [@OliverNakamoto](https://github.com/OliverNakamoto)
